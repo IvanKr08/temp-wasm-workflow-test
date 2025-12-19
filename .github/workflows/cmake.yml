@@ -704,6 +704,7 @@ jobs:
           cd ${{ inputs.repo-path }}
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
+          emcc
           ./bootstrap-vcpkg.sh -disableMetrics
           ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-wasm }} --triplet "$VCPKG_TRIPLET"
           echo "VCPKG_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
