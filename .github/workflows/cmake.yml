@@ -150,6 +150,11 @@ on:
         required: false
         default: "build-essential cmake ninja-build wget"
         type: string
+      wasm-deps:
+        description: "Space-separated list of Ubuntu packages to install before build."
+        required: false
+        default: "build-essential cmake ninja-build wget"
+        type: string
       pre-build-steps:
         description: "Commands to run before building (optional)"
         required: false
@@ -681,6 +686,11 @@ jobs:
           ref: "${{ inputs.repo-tag }}"
           path: "${{ inputs.repo-path }}"
           submodules: true
+      - name: Install dependencies on Ubuntu
+        if: matrix.enable == true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ inputs.wasm-deps }}
       - name: Setup Emscripten
         run: |
           cd ${{ inputs.repo-path }}
