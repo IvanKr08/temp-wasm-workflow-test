@@ -698,11 +698,11 @@ jobs:
           cd emsdk
           ./emsdk install 3.1.56
           ./emsdk activate 3.1.56 --permanent
-          echo 'source "/home/runner/work/temp-wasm-workflow-test/temp-wasm-workflow-test/src/emsdk/emsdk_env.sh"' >> $HOME/.bash_profile
       - name: Setup vcpkg for WASM
         if: matrix.enable == true && inputs.use-vcpkg == true && inputs.use-vcpkg-wasm == true
         run: |
           cd ${{ inputs.repo-path }}
+          ./emsdk/emsdk_env.sh
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
           ./bootstrap-vcpkg.sh -disableMetrics
