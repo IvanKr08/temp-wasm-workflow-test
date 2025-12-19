@@ -1,0 +1,751 @@
+name: Build and Upload Native Artifacts
+
+on:
+  workflow_call:
+    inputs:
+      enable-linux:
+        description: "Enable Linux builds."
+        required: false
+        default: true
+        type: boolean
+      enable-macos:
+        description: "Enable macOS builds."
+        required: false
+        default: true
+        type: boolean
+      enable-windows:
+        description: "Enable Windows builds."
+        required: false
+        default: true
+        type: boolean
+      enable-android:
+        description: "Enable Android builds."
+        required: false
+        default: true
+        type: boolean
+      enable-wasm:
+        description: "Enable WASM builds."
+        required: false
+        default: true
+        type: boolean
+      lib-name:
+        description: "Library name (e.g., Project)"
+        required: true
+        type: string
+      lib-version:
+        description: "Library version (optional, if not set then repo-tag will be used)"
+        required: false
+        default: ""
+        type: string
+      repo:
+        description: "Repository to checkout (e.g., org/project)"
+        required: true
+        type: string
+      repo-tag:
+        description: "Repository tag or ref (e.g., v1.0.0)"
+        required: true
+        type: string
+      repo-path:
+        description: "Path to checkout repo into"
+        required: false
+        default: src
+        type: string
+      checkout-self:
+        description: "Whether to checkout this workflow's repository (true/false)"
+        required: false
+        default: false
+        type: boolean
+      bin-name-osx:
+        description: "macOS binary name"
+        required: true
+        type: string
+      bin-name-linux:
+        description: "Linux binary name"
+        required: true
+        type: string
+      bin-name-android:
+        description: "Android binary name"
+        required: true
+        type: string
+      bin-name-windows:
+        description: "Windows binary name"
+        required: true
+        type: string
+      bin-name-wasm:
+        description: "WASM binary name"
+        required: true
+        type: string
+      bin-name-osx-normalized:
+        description: "Normalized macOS binary name"
+        required: true
+        type: string
+      bin-name-linux-normalized:
+        description: "Normalized Linux binary name"
+        required: true
+        type: string
+      bin-name-android-normalized:
+        description: "Normalized Android binary name"
+        required: true
+        type: string
+      bin-name-windows-normalized:
+        description: "Normalized Windows binary name"
+        required: true
+        type: string
+      bin-name-wasm-normalized:
+        description: "Normalized WASM binary name"
+        required: true
+        type: string
+      build-output-dir:
+        description: "Build output directory"
+        required: false
+        default: artifacts
+        type: string
+      cmake-flags:
+        description: "CMake flags"
+        required: false
+        default: "-DCMAKE_BUILD_TYPE=Release"
+        type: string
+      cmake-flags-linux:
+        description: "Additional CMake flags for Linux."
+        required: false
+        default: ""
+        type: string
+      cmake-flags-macos:
+        description: "Additional CMake flags for macOS."
+        required: false
+        default: ""
+        type: string
+      cmake-flags-windows:
+        description: "Additional CMake flags for Windows."
+        required: false
+        default: ""
+        type: string
+      cmake-flags-android:
+        description: "Additional CMake flags for Android."
+        required: false
+        default: ""
+        type: string
+      cmake-flags-wasm:
+        description: "Additional CMake flags for WASM."
+        required: false
+        default: ""
+        type: string
+      pre-configure-steps:
+        description: "Commands to run before CMake configure (optional)"
+        required: false
+        default: ""
+        type: string
+      ndk-version:
+        description: "Android NDK version"
+        required: false
+        default: "26.3.11579264"
+        type: string
+      android-api:
+        description: "Android API version"
+        required: false
+        default: "21"
+        type: string
+      android-deps:
+        description: "Space-separated list of Ubuntu packages to install before build."
+        required: false
+        default: "build-essential cmake ninja-build wget"
+        type: string
+      pre-build-steps:
+        description: "Commands to run before building (optional)"
+        required: false
+        default: ""
+        type: string
+      post-build-steps:
+        description: "Commands to run after build (optional)"
+        required: false
+        default: ""
+        type: string
+      linux-deps:
+        description: "Space-separated list of Ubuntu packages to install before build."
+        required: false
+        default: "build-essential cmake"
+        type: string
+      windows-deps:
+        description: "Space-separated list of Chocolatey packages to install before build."
+        required: false
+        default: ""
+        type: string
+      macos-deps:
+        description: "Space-separated list of Homebrew packages to install before build."
+        required: false
+        default: ""
+        type: string
+      use-vcpkg:
+        description: "Set to true to enable vcpkg integration."
+        required: false
+        default: false
+        type: boolean
+      use-vcpkg-linux:
+        description: "Set to true to enable vcpkg integration on Linux."
+        required: false
+        default: true
+        type: boolean
+      use-vcpkg-macos:
+        description: "Set to true to enable vcpkg integration on macOS."
+        required: false
+        default: true
+        type: boolean
+      use-vcpkg-windows:
+        description: "Set to true to enable vcpkg integration on Windows."
+        required: false
+        default: true
+        type: boolean
+      use-vcpkg-android:
+        description: "Set to true to enable vcpkg integration on Android."
+        required: false
+        default: true
+        type: boolean
+      use-vcpkg-wasm:
+        description: "Set to true to enable vcpkg integration on WASM."
+        required: false
+        default: true
+        type: boolean
+      vcpkg-packages:
+        description: "Space-separated list of vcpkg packages to install."
+        required: false
+        default: ""
+        type: string
+      vcpkg-packages-linux:
+        description: "Space-separated list of vcpkg packages to install on Linux."
+        required: false
+        default: ""
+        type: string
+      vcpkg-packages-macos:
+        description: "Space-separated list of vcpkg packages to install on macOS."
+        required: false
+        default: ""
+        type: string
+      vcpkg-packages-windows:
+        description: "Space-separated list of vcpkg packages to install on Windows."
+        required: false
+        default: ""
+        type: string
+      vcpkg-packages-android:
+        description: "Space-separated list of vcpkg packages to install on Android."
+        required: false
+        default: ""
+        type: string
+      vcpkg-packages-wasm:
+        description: "Space-separated list of vcpkg packages to install on WASM."
+        required: false
+        default: ""
+        type: string
+      vcpkg-triplet-linux:
+        description: "Template for vcpkg triplet for Linux, e.g. 'triplet-{arch}'. If set, replaces {arch} with matrix.cmake-arch."
+        required: false
+        default: "{arch}-linux"
+        type: string
+      vcpkg-triplet-macos:
+        description: "Template for vcpkg triplet for macOS, e.g. 'triplet-{arch}'. If set, replaces {arch} with matrix.cmake-arch."
+        required: false
+        default: "{arch}-osx"
+        type: string
+      vcpkg-triplet-windows:
+        description: "Template for vcpkg triplet for Windows, e.g. 'triplet-{arch}'. If set, replaces {arch} with matrix.cmake-arch."
+        required: false
+        default: "{arch}-windows"
+        type: string
+      vcpkg-triplet-android:
+        description: "Template for vcpkg triplet for Android, e.g. 'triplet-{arch}'. If set, replaces {arch} with matrix.cmake-arch."
+        required: false
+        default: "{arch}-android"
+        type: string
+      vcpkg-triplet-wasm:
+        description: "Template for vcpkg triplet for WASM, e.g. 'triplet-{arch}'. If set, replaces {arch} with matrix.cmake-arch."
+        required: false
+        default: "{arch}-emscripten"
+        type: string
+      setup-vulkan:
+        description: "Whether to setup Vulkan SDK (optional)"
+        required: false
+        default: false
+        type: boolean
+      setup-vulkan-linux:
+        description: "Whether to setup Vulkan SDK on Linux."
+        required: false
+        default: true
+        type: boolean
+      setup-vulkan-macos:
+        description: "Whether to setup Vulkan SDK on macOS."
+        required: false
+        default: true
+        type: boolean
+      setup-vulkan-windows:
+        description: "Whether to setup Vulkan SDK on Windows."
+        required: false
+        default: true
+        type: boolean
+      vulkan-version:
+        description: "Vulkan SDK version (optional)"
+        required: false
+        default: "1.3.204.0"
+        type: string
+      vulkan-components:
+        description: "Comma-separated list of Vulkan SDK components (optional)"
+        required: false
+        default: "Vulkan-Headers, Vulkan-Loader, Glslang"
+        type: string
+      vulkan-use-cache:
+        description: "Whether to use Vulkan SDK cache (optional)"
+        required: false
+        default: false
+        type: boolean
+      
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os-name: linux
+            arch: x86_64
+            cmake-arch: x64
+            rtid: linux-x64
+            vcpkg-arch: x64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-linux }}
+            enable: ${{ inputs.enable-linux }}
+          - os: ubuntu-24.04-arm
+            os-name: linux
+            arch: arm64
+            cmake-arch: aarch64
+            rtid: linux-arm64
+            vcpkg-arch: arm64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-linux }}
+            enable: ${{ inputs.enable-linux }}
+          - os: windows-latest
+            os-name: windows
+            arch: x86_64
+            cmake-arch: x64
+            rtid: win-x64
+            vcpkg-arch: x64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-windows }}
+            enable: ${{ inputs.enable-windows }}
+          - os: windows-latest
+            os-name: windows
+            arch: x86
+            cmake-arch: win32
+            rtid: win-x86
+            vcpkg-arch: x86
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-windows }}
+            enable: ${{ inputs.enable-windows }}
+          - os: windows-latest
+            os-name: windows
+            arch: arm64
+            cmake-arch: arm64
+            rtid: win-arm64
+            vcpkg-arch: arm64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-windows }}
+            enable: ${{ inputs.enable-windows }}
+          - os: macos-latest
+            os-name: macos
+            arch: x86_64
+            cmake-arch: x86_64
+            rtid: osx-x64
+            vcpkg-arch: x64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-macos }}
+            enable: ${{ inputs.enable-macos }}
+          - os: macos-latest
+            os-name: macos
+            arch: arm64
+            cmake-arch: arm64
+            rtid: osx-arm64
+            vcpkg-arch: arm64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-macos }}
+            enable: ${{ inputs.enable-macos }}
+    steps:
+      - name: Setup environment variables
+        shell: bash
+        run: |
+          arch="${{ matrix.vcpkg-arch }}"
+          tpl="${{ matrix.vcpkg-triplet }}"
+          triplet=$(echo "$tpl" | sed "s/{arch}/$arch/g")
+          echo "VCPKG_TRIPLET=$triplet" >> $GITHUB_ENV
+          echo "DEBUG: arch=$arch tpl=$tpl triplet=$triplet"
+      - uses: actions/checkout@v4
+        if: matrix.enable == true && inputs.checkout-self
+      - uses: actions/checkout@v4
+        if: matrix.enable == true
+        with:
+          repository: "${{ inputs.repo }}"
+          ref: "${{ inputs.repo-tag }}"
+          path: "${{ inputs.repo-path }}"
+          submodules: true
+      - name: Install dependencies on Ubuntu
+        if: matrix.enable == true && matrix.os-name == 'linux'
+        run: |
+          sudo apt-get update && sudo apt-get install -y ${{ inputs.linux-deps }}
+      - name: Install dependencies on macOS
+        if: matrix.enable == true && matrix.os-name == 'macos' && inputs.macos-deps != ''
+        run: |
+          brew update
+          brew install ${{ inputs.macos-deps }}
+      - name: Install dependencies on Windows
+        if: matrix.enable == true && matrix.os-name == 'windows' && inputs.windows-deps != ''
+        run: |
+          choco install -y ${{ inputs.windows-deps }}
+      - name: Prepare Vulkan SDK
+        if: matrix.enable == true && inputs.setup-vulkan == true && ((inputs.setup-vulkan-macos == true && matrix.os-name == 'macos') || (inputs.setup-vulkan-linux == true && matrix.os-name == 'linux') || (inputs.setup-vulkan-windows == true && matrix.os-name == 'windows'))
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-query-version: ${{ inputs.vulkan-version }}
+          vulkan-components: ${{ inputs.vulkan-components }}
+          vulkan-use-cache: ${{ inputs.vulkan-use-cache }}
+      - name: Setup vcpkg
+        if: matrix.enable == true && ((inputs.use-vcpkg == true && inputs.use-vcpkg-macos == true && matrix.os-name == 'macos') || (inputs.use-vcpkg == true && inputs.use-vcpkg-linux == true && matrix.os-name == 'linux') || (inputs.use-vcpkg == true && inputs.use-vcpkg-windows == true && matrix.os-name == 'windows'))
+        shell: bash
+        run: |
+          echo $VCPKG_TRIPLET
+          cd ${{ inputs.repo-path }}
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh -disableMetrics
+          if [ "${{ matrix.os-name }}" = "linux" ]; then
+            ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-linux }} --triplet "$VCPKG_TRIPLET"
+          elif [ "${{ matrix.os-name }}" = "macos" ]; then
+            ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-macos }} --triplet "$VCPKG_TRIPLET"
+          elif [ "${{ matrix.os-name }}" = "windows" ]; then
+            ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-windows }} --triplet "$VCPKG_TRIPLET"
+          fi
+      - name: Pre-Configure Setup
+        if: matrix.enable == true && inputs.pre-configure-steps != ''
+        shell: bash
+        run: |
+          export GHA_OS="${{matrix.os}}"
+          export GHA_OS_NAME="${{matrix.os-name}}"
+          export GHA_ARCH="${{matrix.arch}}"
+          export GHA_CMAKE_ARCH="${{matrix.cmake-arch}}"
+          export GHA_CMAKE_RTID="${{matrix.rtid}}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.pre-configure-steps }}
+      - name: Configure with CMake for Linux
+        if: matrix.enable == true && matrix.os-name == 'linux'
+        run: |
+          cd ${{ inputs.repo-path }}
+          if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-linux }}" = "true" ]; then \
+            cmake -S . -B ./build ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-linux }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; \
+          else \
+            cmake -S . -B ./build ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-linux }}; \
+          fi
+      - name: Configure with CMake for macOS
+        if: matrix.enable == true && matrix.os-name == 'macos'
+        run: |
+          cd ${{ inputs.repo-path }}
+          if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-macos }}" = "true" ]; then \
+            cmake -S . -B ./build -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake-arch }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-macos }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; \
+          else \
+            cmake -S . -B ./build -DCMAKE_OSX_ARCHITECTURES=${{ matrix.cmake-arch }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-macos }}; \
+          fi
+      - name: Configure with CMake for Windows
+        if: matrix.enable == true && matrix.os-name == 'windows'
+        shell: bash
+        run: |
+          cd ${{ inputs.repo-path }}
+          if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-windows }}" = "true" ]; then \
+            cmake -S . -B ./build -A ${{ matrix.cmake-arch }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-windows }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; \
+          else \
+            cmake -S . -B ./build -A ${{ matrix.cmake-arch }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-windows }}; \
+          fi
+      - name: Pre-Build Setup
+        if: matrix.enable == true && inputs.pre-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_OS="${{matrix.os}}"
+          export GHA_OS_NAME="${{matrix.os-name}}"
+          export GHA_ARCH="${{matrix.arch}}"
+          export GHA_CMAKE_ARCH="${{matrix.cmake-arch}}"
+          export GHA_CMAKE_RTID="${{matrix.rtid}}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.pre-build-steps }}
+      - name: Build
+        if: matrix.enable == true
+        run: |
+          cd ${{ inputs.repo-path }}
+          cmake --build ./build --config Release
+      - name: Post-Build Steps
+        if: matrix.enable == true && inputs.post-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_OS="${{matrix.os}}"
+          export GHA_OS_NAME="${{matrix.os-name}}"
+          export GHA_ARCH="${{matrix.arch}}"
+          export GHA_CMAKE_ARCH="${{matrix.cmake-arch}}"
+          export GHA_CMAKE_RTID="${{matrix.rtid}}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.post-build-steps }}
+      - name: Normalize binaries for macOS
+        if: matrix.enable == true && matrix.os-name == 'macos'
+        run: |
+          rm -rf ${{ inputs.build-output-dir }}
+          mkdir ${{ inputs.build-output-dir }}
+          cp -L ${{ inputs.repo-path }}/build/${{ inputs.bin-name-osx }} ${{ inputs.build-output-dir }}/${{ inputs.bin-name-osx-normalized }}
+          ls -lha ${{ inputs.build-output-dir }}
+      - name: Normalize binaries for Linux
+        if: matrix.enable == true && matrix.os-name == 'linux'
+        run: |
+          rm -rf ${{ inputs.build-output-dir }}
+          mkdir ${{ inputs.build-output-dir }}
+          cp -L ${{ inputs.repo-path }}/build/${{ inputs.bin-name-linux }} ${{ inputs.build-output-dir }}/${{ inputs.bin-name-linux-normalized }}
+          ls -lha ${{ inputs.build-output-dir }}
+      - name: Normalize binaries for Windows
+        if: matrix.enable == true && matrix.os-name == 'windows'
+        run: |
+          rm -r ${{ inputs.build-output-dir }} -ErrorAction SilentlyContinue
+          mkdir ${{ inputs.build-output-dir }}
+          cp ${{ inputs.repo-path }}/build/${{ inputs.bin-name-windows }} ${{ inputs.build-output-dir }}/${{ inputs.bin-name-windows-normalized }}
+          ls ${{ inputs.build-output-dir }}
+      - name: Upload Artifacts
+        if: matrix.enable == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.lib-name }}-${{ matrix.rtid }}
+          path: |
+            ${{ inputs.build-output-dir }}/*.*
+          if-no-files-found: error
+  build-android:
+    env:
+      android-cmake-flags: -G "Ninja" -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang -DCMAKE_ANDROID_STL_TYPE=c++_shared -DANDROID_NDK=$ANDROID_NDK_HOME
+    runs-on: ubuntu-latest
+    if: inputs.enable-android == true
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os-name: android
+            arch: arm64
+            cmake-arch: arm64-v8a
+            rtid: android-arm64
+            vcpkg-arch: arm64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-android }}
+            enable: ${{ inputs.enable-android }}
+          - os: ubuntu-latest
+            os-name: android
+            arch: x86_64
+            cmake-arch: x86_64
+            rtid: android-x64
+            vcpkg-arch: x64
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-android }}
+            enable: ${{ inputs.enable-android }}
+    steps:
+      - name: Setup environment variables
+        shell: bash
+        run: |
+          arch="${{ matrix.vcpkg-arch }}"
+          tpl="${{ matrix.vcpkg-triplet }}"
+          triplet=$(echo "$tpl" | sed "s/{arch}/$arch/g")
+          echo "VCPKG_TRIPLET=$triplet" >> $GITHUB_ENV
+          echo "DEBUG: arch=$arch tpl=$tpl triplet=$triplet"
+      - uses: actions/checkout@v4
+        if: matrix.enable == true && inputs.checkout-self
+      - uses: actions/checkout@v4
+        if: matrix.enable == true
+        with:
+          repository: "${{ inputs.repo }}"
+          ref: "${{ inputs.repo-tag }}"
+          path: "${{ inputs.repo-path }}"
+          submodules: true
+      - name: Install dependencies on Ubuntu
+        if: matrix.enable == true
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ inputs.android-deps }}
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: 17
+      - name: Install Android SDK Manager
+        uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+      - name: Install Android NDK
+        run: |
+          sdkmanager --install "ndk;${{ inputs.ndk-version}}"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${{ inputs.ndk-version}}" >> $GITHUB_ENV
+          echo "PATH=$PATH:$ANDROID_SDK_ROOT/ndk/${{ inputs.ndk-version}}" >> $GITHUB_ENV
+      - name: Setup vcpkg for Android
+        if: matrix.enable == true && inputs.use-vcpkg == true && inputs.use-vcpkg-android == true
+        run: |
+          cd ${{ inputs.repo-path }}
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh -disableMetrics
+          ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-android }} --triplet "$VCPKG_TRIPLET"
+          echo "VCPKG_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+      - name: Pre-Configure Setup (Android)
+        if: matrix.enable == true && inputs.pre-configure-steps != ''
+        shell: bash
+        run: |
+          export GHA_RUNNER_OS="${{ matrix.os }}"
+          export GHA_OS_NAME="${{ matrix.os-name }}"
+          export GHA_ARCH="${{ matrix.arch }}"
+          export GHA_CMAKE_ARCH="${{ matrix.cmake-arch }}"
+          export GHA_CMAKE_RTID="${{ matrix.rtid }}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          export GHA_ANDROID_API="${{ inputs.android-api }}"
+          export GHA_ANDROID_NDK="${{ inputs.ndk-version }}"
+          export GHA_ANDROID_CMAKE_FLAGS="${{ env.android-cmake-flags }}"
+          ${{ inputs.pre-configure-steps }}
+      - name: Configure
+        if: matrix.enable == true && matrix.os-name == 'android'
+        run: |
+          cd ${{ inputs.repo-path }}
+          if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-android }}" = "true" ]; then \
+            cmake -S . -B ./build ${{ env.android-cmake-flags }} -DCMAKE_ANDROID_ARCH_ABI=${{ matrix.cmake-arch }} -DCMAKE_ANDROID_API=${{ inputs.android-api }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-android }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; \
+          else \
+            cmake -S . -B ./build ${{ env.android-cmake-flags }} -DCMAKE_ANDROID_ARCH_ABI=${{ matrix.cmake-arch }} -DCMAKE_ANDROID_API=${{ inputs.android-api }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-android }}; \
+          fi
+      - name: Pre-Build Setup (Android)
+        if: matrix.enable == true && inputs.pre-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_RUNNER_OS="${{ matrix.os }}"
+          export GHA_OS_NAME="${{ matrix.os-name }}"
+          export GHA_ARCH="${{ matrix.arch }}"
+          export GHA_CMAKE_ARCH="${{ matrix.cmake-arch }}"
+          export GHA_CMAKE_RTID="${{ matrix.rtid }}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          export GHA_ANDROID_API="${{ inputs.android-api }}"
+          export GHA_ANDROID_NDK="${{ inputs.ndk-version }}"
+          export GHA_ANDROID_CMAKE_FLAGS="${{ env.android-cmake-flags }}"
+          ${{ inputs.pre-build-steps }}
+      - name: Build
+        if: matrix.enable == true
+        run: |
+          cd ${{ inputs.repo-path }}
+          cmake --build ./build --config Release
+      - name: Post-Build Steps (Android)
+        if: matrix.enable == true && inputs.post-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_RUNNER_OS="${{ matrix.os }}"
+          export GHA_OS_NAME="${{ matrix.os-name }}"
+          export GHA_ARCH="${{ matrix.arch }}"
+          export GHA_CMAKE_ARCH="${{ matrix.cmake-arch }}"
+          export GHA_CMAKE_RTID="${{ matrix.rtid }}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          export GHA_ANDROID_API="${{ inputs.android-api }}"
+          export GHA_ANDROID_NDK="${{ inputs.ndk-version }}"
+          export GHA_ANDROID_CMAKE_FLAGS="${{ env.android-cmake-flags }}"
+          ${{ inputs.post-build-steps }}
+      - name: Normalize binaries for Android
+        if: matrix.enable == true
+        run: |
+          rm -rf ${{ inputs.build-output-dir }}
+          mkdir -p ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}
+          cp -L ${{ inputs.repo-path }}/build/${{ inputs.bin-name-android }} ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}/${{ inputs.bin-name-android-normalized }}
+          ls ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}
+      - name: Upload Artifacts (android-${{ matrix.arch }})
+        if: matrix.enable == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.lib-name }}-${{ matrix.rtid }}
+          path: ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}/*.*
+          if-no-files-found: error
+  build-wasm:
+    env:
+      wasm-cmake-flags: -G "Ninja"
+    runs-on: ubuntu-latest
+    if: inputs.enable-wasm == true
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os-name: browser
+            arch: wasm
+            cmake-arch: wasm
+            rtid: browser-wasm
+            vcpkg-arch: wasm32
+            vcpkg-triplet: ${{ inputs.vcpkg-triplet-wasm }}
+            enable: ${{ inputs.enable-wasm }}
+    steps:
+      - name: Setup environment variables
+        shell: bash
+        run: |
+          arch="${{ matrix.vcpkg-arch }}"
+          tpl="${{ matrix.vcpkg-triplet }}"
+          triplet=$(echo "$tpl" | sed "s/{arch}/$arch/g")
+          echo "VCPKG_TRIPLET=$triplet" >> $GITHUB_ENV
+          echo "DEBUG: arch=$arch tpl=$tpl triplet=$triplet"
+      - uses: actions/checkout@v4
+        if: matrix.enable == true && inputs.checkout-self
+      - uses: actions/checkout@v4
+        if: matrix.enable == true
+        with:
+          repository: "${{ inputs.repo }}"
+          ref: "${{ inputs.repo-tag }}"
+          path: "${{ inputs.repo-path }}"
+          submodules: true
+      - name: Setup Emscripten
+        run: |
+          cd ${{ inputs.repo-path }}
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk update
+          ./emsdk install 3.1.56
+          ./emsdk activate 3.1.56
+      - name: Setup vcpkg for WASM
+        if: matrix.enable == true && inputs.use-vcpkg == true && inputs.use-vcpkg-wasm == true
+        run: |
+          cd ${{ inputs.repo-path }}
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh -disableMetrics
+          ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-wasm }} --triplet "$VCPKG_TRIPLET"
+          echo "VCPKG_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+      - name: Configure
+        if: matrix.enable == true && matrix.os-name == 'browser'
+        run: |
+          cd ${{ inputs.repo-path }}
+          if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-wasm }}" = "true" ]; then \
+            emcmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake \
+          else \
+            emcmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }}; \
+          fi
+      - name: Pre-Build Setup (WASM)
+        if: matrix.enable == true && inputs.pre-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_RUNNER_OS="${{ matrix.os }}"
+          export GHA_OS_NAME="${{ matrix.os-name }}"
+          export GHA_ARCH="${{ matrix.arch }}"
+          export GHA_CMAKE_ARCH="${{ matrix.cmake-arch }}"
+          export GHA_CMAKE_RTID="${{ matrix.rtid }}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.pre-build-steps }}
+      - name: Build
+        if: matrix.enable == true
+        run: |
+          cd ${{ inputs.repo-path }}
+          emcmake --build ./build --config Release
+      - name: Post-Build Steps (WASM)
+        if: matrix.enable == true && inputs.post-build-steps != ''
+        shell: bash
+        run: |
+          export GHA_RUNNER_OS="${{ matrix.os }}"
+          export GHA_OS_NAME="${{ matrix.os-name }}"
+          export GHA_ARCH="${{ matrix.arch }}"
+          export GHA_CMAKE_ARCH="${{ matrix.cmake-arch }}"
+          export GHA_CMAKE_RTID="${{ matrix.rtid }}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.post-build-steps }}
+      - name: Normalize binaries for WASM
+        if: matrix.enable == true
+        run: |
+          rm -rf ${{ inputs.build-output-dir }}
+          mkdir -p ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}
+          cp -L ${{ inputs.repo-path }}/build/${{ inputs.bin-name-wasm }} ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}/${{ inputs.bin-name-wasm-normalized }}
+          ls ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}
+      - name: Upload Artifacts (WASM)
+        if: matrix.enable == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.lib-name }}-${{ matrix.rtid }}
+          path: ${{ inputs.build-output-dir }}/${{ matrix.cmake-arch }}/*.*
+          if-no-files-found: error
+          
