@@ -22,7 +22,8 @@ jobs:
       bin-name-android: cimgui.a
       bin-name-android-normalized: cimgui.a
       bin-name-wasm: cimgui.a
-      
+      bin-name-wasm-normalized: cimgui.a
+       
       enable-linux: false
       enable-macos: false
       enable-windows: false
