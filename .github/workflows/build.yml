@@ -1,0 +1,31 @@
+name: Build ImGui and Addons Libraries (Static)
+
+on: [workflow_dispatch, push]
+
+jobs:
+  build-cimgui:
+    uses: ./.github/workflows/cmake.yml
+    with:
+      lib-name: cimgui
+      repo: JunaMeinhold/cimgui
+      repo-tag: docking_inter
+      cmake-flags: -DIMGUI_WCHAR32=ON -DIMGUI_FREETYPE=ON -DCIMGUI_VARGS0=1 -DIMGUI_STATIC=ON
+      use-vcpkg: true
+      vcpkg-packages: freetype
+      vcpkg-triplet-windows: "{arch}-windows-static"
+      bin-name-linux: cimgui.a
+      bin-name-linux-normalized: cimgui.a
+      bin-name-windows: Release/cimgui.lib
+      bin-name-windows-normalized: cimgui.lib
+      bin-name-osx: cimgui.a
+      bin-name-osx-normalized: cimgui.a
+      bin-name-android: cimgui.a
+      bin-name-android-normalized: cimgui.a
+      bin-name-wasm: cimgui.a
+      
+      enable-linux: false
+      enable-macos: false
+      enable-windows: false
+      enable-android: false
+      
+      android-api: 23
