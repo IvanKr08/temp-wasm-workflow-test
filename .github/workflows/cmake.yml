@@ -713,9 +713,9 @@ jobs:
         run: |
           cd ${{ inputs.repo-path }}
           if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-wasm }}" = "true" ]; then \
-            emcmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake \
+            emcmake cmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake \
           else \
-            emcmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }}; \
+            emcmake cmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }}; \
           fi
       - name: Pre-Build Setup (WASM)
         if: matrix.enable == true && inputs.pre-build-steps != ''
