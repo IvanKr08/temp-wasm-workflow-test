@@ -699,8 +699,7 @@ jobs:
           ./emsdk install 3.1.56
           ./emsdk activate 3.1.56 --permanent
           echo "PATH=$PATH:/home/runner/work/temp-wasm-workflow-test/temp-wasm-workflow-test/src/emsdk:/home/runner/work/temp-wasm-workflow-test/temp-wasm-workflow-test/src/emsdk/upstream/emscripten" >> $GITHUB_ENV
-          echo "EMSDK=$EMSDK" >> $GITHUB_ENV
-          echo $EMSDK
+          echo "EMSDK=/home/runner/work/temp-wasm-workflow-test/temp-wasm-workflow-test/src/emsdk" >> $GITHUB_ENV
       - name: Setup vcpkg for WASM
         if: matrix.enable == true && inputs.use-vcpkg == true && inputs.use-vcpkg-wasm == true
         run: |
@@ -715,7 +714,7 @@ jobs:
         run: |
           cd ${{ inputs.repo-path }}
           if [ "${{ inputs.use-vcpkg }}" = "true" ] && [ "${{ inputs.use-vcpkg-wasm }}" = "true" ]; then
-            emcmake cmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE="$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            emcmake cmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }} -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=$VCPKG_TRIPLET; -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE="${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" --debug-find
           else
             emcmake cmake -S . -B ./build ${{ env.wasm-cmake-flags }} ${{ inputs.cmake-flags }} ${{ inputs.cmake-flags-wasm }};
           fi
