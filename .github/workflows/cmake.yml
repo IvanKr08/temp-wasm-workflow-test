@@ -733,7 +733,7 @@ jobs:
         if: matrix.enable == true
         run: |
           cd ${{ inputs.repo-path }}
-          cmake cmake --build ./build --config Release
+          cmake --build ./build --config Release
       - name: Post-Build Steps (WASM)
         if: matrix.enable == true && inputs.post-build-steps != ''
         shell: bash
