@@ -32,7 +32,7 @@ jobs:
       setup-vulkan: true
       setup-vulkan-linux: false
       setup-vulkan-windows: false
-      pre-deps-steps: "bash scripts/downgrade_cmake.sh"
+      # pre-deps-steps: "bash scripts/downgrade_cmake.sh"
       checkout-self: true
       
   build-sdl3:
@@ -62,4 +62,4 @@ jobs:
       setup-vulkan: true
       setup-vulkan-linux: false
       setup-vulkan-windows: false
-      pre-deps-steps: "bash scripts/downgrade_cmake.sh"
+      # pre-deps-steps: "bash scripts/downgrade_cmake.sh"
