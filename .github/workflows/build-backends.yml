@@ -11,6 +11,7 @@ jobs:
       repo-tag: main
       cmake-flags: -DBACKENDS_BASE_ONLY=ON -DIMGUI_WCHAR32=ON -DIMGUI_STATIC=ON
       cmake-flags-windows: -DCMAKE_SYSTEM_VERSION=10.0.26100.0
+      cmake-flags-wasm: -DBACKENDS_VULKAN=OFF 
       bin-name-osx: libImGuiImpl.a
       bin-name-linux: libImGuiImpl.a
       bin-name-android: libImGuiImpl.a
