@@ -23,7 +23,7 @@ elif [[ "$PLATFORM" == "macos" ]]; then
 elif [[ "$PLATFORM" == "windows" ]]; then
     cmake -S . -B ./build -A "$ARCH" $CMAKE_ARGS -DCMAKE_SYSTEM_VERSION=10.0.26100.0
 elif [[ "$PLATFORM" == "browser" ]]; then
-    emcmake -S . -B ./build $CMAKE_ARGS
+    emcmake cmake -S . -B ./build $CMAKE_ARGS
 else
     echo "Unknown platform: $PLATFORM"
     exit 1
