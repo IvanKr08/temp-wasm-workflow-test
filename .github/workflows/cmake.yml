@@ -709,6 +709,17 @@ jobs:
           ./bootstrap-vcpkg.sh -disableMetrics
           ./vcpkg install ${{ inputs.vcpkg-packages }} ${{ inputs.vcpkg-packages-wasm }} --triplet "$VCPKG_TRIPLET"
           echo "VCPKG_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
+      - name: Pre-Configure Setup
+        if: matrix.enable == true && inputs.pre-configure-steps != ''
+        shell: bash
+        run: |
+          export GHA_OS="${{matrix.os}}"
+          export GHA_OS_NAME="${{matrix.os-name}}"
+          export GHA_ARCH="${{matrix.arch}}"
+          export GHA_CMAKE_ARCH="${{matrix.cmake-arch}}"
+          export GHA_CMAKE_RTID="${{matrix.rtid}}"
+          export GHA_CMAKE_VCPKG_TRIPLET="$VCPKG_TRIPLET"
+          ${{ inputs.pre-configure-steps }}
       - name: Configure
         if: matrix.enable == true && matrix.os-name == 'browser'
         run: |
