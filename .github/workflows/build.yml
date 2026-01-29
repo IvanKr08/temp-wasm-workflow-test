@@ -37,16 +37,16 @@ jobs:
       repo: JunaMeinhold/cimplot
       repo-tag: master
       cmake-flags: -DIMGUI_WCHAR32=ON -DIMGUI_FREETYPE=ON -DCIMGUI_VARGS0=1 -DIMGUI_STATIC=ON
-      bin-name-linux: cimplot.so
-      bin-name-linux-normalized: cimplot.so
-      bin-name-windows: Release/cimplot.dll
-      bin-name-windows-normalized: cimplot.dll
-      bin-name-osx: cimplot.dylib
-      bin-name-osx-normalized: cimplot.dylib
-      bin-name-android: cimplot.so
-      bin-name-android-normalized: cimplot.so
-      bin-name-wasm: cimgui.a
-      bin-name-wasm-normalized: cimgui.a
+      bin-name-linux: cimplot.a
+      bin-name-linux-normalized: cimplot.a
+      bin-name-windows: Release/cimplot.lib
+      bin-name-windows-normalized: cimplot.lib
+      bin-name-osx: cimplot.a
+      bin-name-osx-normalized: cimplot.a
+      bin-name-android: cimplot.a
+      bin-name-android-normalized: cimplot.a
+      bin-name-wasm: cimplot.a
+      bin-name-wasm-normalized: cimplot.a
       
       enable-macos: false
       enable-windows: false
