@@ -28,5 +28,29 @@ jobs:
       enable-macos: false
       enable-windows: false
       enable-android: false
-      
       android-api: 23
+      
+  build-cimplot:
+    uses: ./.github/workflows/cmake.yml
+    with:
+      lib-name: cimplot
+      repo: JunaMeinhold/cimplot
+      repo-tag: master
+      cmake-flags: -DIMGUI_WCHAR32=ON -DIMGUI_FREETYPE=ON -DCIMGUI_VARGS0=1 -DIMGUI_STATIC=ON
+      bin-name-linux: cimplot.so
+      bin-name-linux-normalized: cimplot.so
+      bin-name-windows: Release/cimplot.dll
+      bin-name-windows-normalized: cimplot.dll
+      bin-name-osx: cimplot.dylib
+      bin-name-osx-normalized: cimplot.dylib
+      bin-name-android: cimplot.so
+      bin-name-android-normalized: cimplot.so
+      bin-name-wasm: cimgui.a
+      bin-name-wasm-normalized: cimgui.a
+      
+      enable-macos: false
+      enable-windows: false
+      enable-android: false
+      android-api: 23
+      pre-configure-steps: "bash scripts/setup_addon_build.sh"
+      checkout-self: true
